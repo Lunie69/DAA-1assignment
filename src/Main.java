@@ -1,5 +1,9 @@
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * SkyShow Collision Alert - Assignment 1.
@@ -43,9 +47,11 @@ public class Main {
 
     /** Returns the two closest drones as new Drone[] {a, b}. */
     static Drone[] findClosestPairDivideAndConquer(Drone[] drones) {
-        // TODO: copy the array (drones.clone()), sort the copy by x, then call closest(...).
-        //       Sorting by x:  Arrays.sort(copy, Comparator.comparingInt(d -> d.x));
-        throw new UnsupportedOperationException("Part B (Divide & Conquer) is not written yet");
+        Drone[] copy = drones.clone();
+
+        Arrays.sort(copy, Comparator.comparingInt(d -> d.x));
+
+        return closest(copy, 0, copy.length);
     }
 
     /**
@@ -55,24 +61,79 @@ public class Main {
     private static Drone[] closest(Drone[] sorted, int from, int to) {
         int n = to - from;
 
-        // BASE CASE: 3 drones or fewer - just check all pairs
-        // TODO
+        // BASE CASE:
+        if (to - from <= 3) {
+            Drone[] small = Arrays.copyOfRange(sorted, from, to);
+            return findClosestPairBruteForce(small);
+        }
 
         // DIVIDE: split in the middle BY INDEX; midX is the x of the middle drone
-        // TODO
+        int mid = from + (to - from) / 2;
+        int midX = sorted[mid].x;
+
+        Drone[] leftPair = closest(sorted, from, mid);
+        Drone[] rightPair = closest(sorted, mid, to);
 
         // RECURSIVE CASE: solve the left half and the right half, keep the better pair.
         //                 delta = the smaller of the two squared distances.
-        // TODO
+        long leftDx = (long) leftPair[0].x - leftPair[1].x;
+        long leftDy = (long) leftPair[0].y - leftPair[1].y;
+        long leftDistance = leftDx * leftDx + leftDy * leftDy;
+
+        long rightDx = (long) rightPair[0].x - rightPair[1].x;
+        long rightDy = (long) rightPair[0].y - rightPair[1].y;
+        long rightDistance = rightDx * rightDx + rightDy * rightDy;
+
+        Drone[] bestPair;
+        long delta;
+
+        if (leftDistance <= rightDistance) {
+            bestPair = leftPair;
+            delta = leftDistance;
+        } else {
+            bestPair = rightPair;
+            delta = rightDistance;
+        }
 
         // COMBINE: the closest pair may have one drone on each side.
         //          1) strip = the drones with (x - midX) * (x - midX) < delta
         //          2) sort the strip by y
         //          3) for each drone in the strip, compare it with the next ones and
         //             stop as soon as (y difference) * (y difference) >= delta
-        // TODO
+        List<Drone> strip = new ArrayList<>();
 
-        throw new UnsupportedOperationException("Part B (Divide & Conquer) is not written yet");
+        for (int i = from; i < to; i++) {
+            long dx = (long) sorted[i].x - midX;
+
+            if (dx * dx < delta) {
+                strip.add(sorted[i]);
+            }
+        }
+
+        strip.sort(Comparator.comparingInt(d -> d.y));
+
+        for (int i = 0; i < strip.size(); i++) {
+            for (int j = i + 1; j < strip.size(); j++) {
+
+                long dy = (long) strip.get(j).y - strip.get(i).y;
+
+                if (dy * dy >= delta) {
+                    break;
+                }
+
+                long distance = Drone.distSq(strip.get(i), strip.get(j));
+
+                if (distance < delta) {
+                    delta = distance;
+                    bestPair = new Drone[]{
+                            strip.get(i),
+                            strip.get(j)
+                    };
+                }
+            }
+        }
+
+        return bestPair;
     }
 
     // ======================== Part C: Safety limit ========================
