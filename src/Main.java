@@ -7,7 +7,7 @@ import java.util.Comparator;
  */
 public class Main {
 
-    static final String BARCODE = "YOUR_BARCODE";   // <-- put your student barcode here
+    static final String BARCODE = "251567";   // <-- put your student barcode here
 
     public static void main(String[] args) {
         // Runs your methods, checks them and prints the results.
@@ -18,9 +18,25 @@ public class Main {
 
     /** Returns the two closest drones as new Drone[] {a, b}. */
     static Drone[] findClosestPairBruteForce(Drone[] drones) {
-        // TODO: look at every pair exactly once and keep the closest one.
-        //       Compare two drones with Drone.distSq(a, b) and store the best value in a variable.
-        throw new UnsupportedOperationException("Part A (Brute Force) is not written yet");
+        long bestDistance = Long.MAX_VALUE;
+
+        Drone first = drones[0];
+        Drone second = drones[1];
+
+        for (int i = 0; i < drones.length; i++) {
+            for (int j = i + 1; j < drones.length; j++) {
+
+                long distance = Drone.distSq(drones[i], drones[j]);
+
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    first = drones[i];
+                    second = drones[j];
+                }
+            }
+        }
+
+        return new Drone[]{first, second};
     }
 
     // ====================== Part B: Divide & Conquer ======================
