@@ -144,11 +144,30 @@ public class Main {
      * closer than Drone.SAFE_DISTANCE_CM.
      */
     static int findFirstUnsafeN(Drone[] drones) {
-        // TODO: binary search on N, exactly like binary search in an array.
-        //       low = 2, high = drones.length.
-        //       For a middle N: take Arrays.copyOfRange(drones, 0, mid), run your Part B on it,
-        //       and ask whether that pair is closer than SAFE_DISTANCE_CM (compare SQUARED values).
-        //       Unsafe -> the answer is mid or smaller. Safe -> the answer is bigger.
-        throw new UnsupportedOperationException("Part C (Safety limit) is not written yet");
+        int low = 2;
+        int high = drones.length;
+
+        long safeDistanceSq =
+                (long) Drone.SAFE_DISTANCE_CM * Drone.SAFE_DISTANCE_CM;
+
+        while (low < high) {
+            int mid = low + (high - low) / 2;
+
+            Drone[] current = Arrays.copyOfRange(drones, 0, mid);
+
+            Drone[] pair = findClosestPairDivideAndConquer(current);
+
+            long dx = (long) pair[0].x - pair[1].x;
+            long dy = (long) pair[0].y - pair[1].y;
+            long distance = dx * dx + dy * dy;
+
+            if (distance < safeDistanceSq) {
+                high = mid;
+            } else {
+                low = mid + 1;
+            }
+        }
+
+        return low;
     }
 }
